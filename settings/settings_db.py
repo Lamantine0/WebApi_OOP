@@ -8,11 +8,11 @@ class Settings_DB:
 
     def __init__(self, SQLALCHEMY_DATABASE_URL):
         self.__SQLALCHEMY_DATABASE_URL__ = SQLALCHEMY_DATABASE_URL
-        self.engine =  self.settings() 
-        self.SessionLocal = self.locationSession()
+        self.engine =  self.CreateEngine() 
+        self.SessionLocal = self.CreateSession()
     
 
-    def settings(self):
+    def CreateEngine(self):
 
       engine = self.engine = create_engine(
             self.__SQLALCHEMY_DATABASE_URL__,
@@ -21,9 +21,9 @@ class Settings_DB:
       
       return engine
 
-    def locationSession(self):
+    def CreateSession(self):
 
-       session = self.SessionLocal = sessionmaker(autoflush=False, bind=self.engine)
+       session = sessionmaker(autoflush=False, bind=self.engine)
 
        return session
 

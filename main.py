@@ -2,7 +2,7 @@
 from datetime import  datetime
 import imghdr
 import json
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel 
 from models_db.model import Table_news
@@ -204,14 +204,14 @@ class News:
               
 
         
-    @app.put("/change_news/", tags=["Изменение новости"])
+    @app.put("/change_news/{id}", tags=["Изменение новости по id"])
     async def change_news(
-        id: Annotated[int, None], title : Annotated[str, None], 
-        news: Annotated[str, None], image: Annotated[UploadFile, File] = None):
+        # обязательный параментр id
+        id : int, 
+        title : Optional[str] = None, 
+        news : Optional[str] = None,
+        image: Optional[UploadFile] = None):
         
-
-        photo_data = await image.read()
-
         with settings_db.SessionLocal() as db:
 
             news_to_update = db.query(Table_news).filter(Table_news.id == id).first()
@@ -226,11 +226,16 @@ class News:
                 news_to_update.news = news
 
             if image is not None:
+
+                photo_data = await image.read()
+
                 news_to_update.image = photo_data
-                    
-                
 
             db.commit()
+
+            return {f"Новость с id : {news_to_update.id} успешно обновлена"}   
+
+            
         
 
 
@@ -268,7 +273,30 @@ class News:
             return list_news    
                    
                 
+    
+    @app.get("/get_img_and_id_news", tags=["Полученик картинки и id новости"])
+    async def get_img_and_id(id : str):
 
+        with settings_db.SessionLocal() as db:
+
+            get_news = db.query(Table_news).filter(Table_news.id == id).first()
+
+            if not get_news:
+                raise HTTPException(status_code=404, detail="ID новости не найден")
+            
+            if get_news.image:
+
+                image_base64 = base64.b64encode(get_news.image).decode('utf-8')
+
+            return {
+                "Id" : get_news.id,
+                "image" : image_base64
+
+            }
+            
+
+
+    
            
             
 
