@@ -8,21 +8,20 @@ class Settings_DB:
 
     def __init__(self, SQLALCHEMY_DATABASE_URL):
         self.__SQLALCHEMY_DATABASE_URL__ = SQLALCHEMY_DATABASE_URL
-        self.engine =  self.CreateEngine() 
+        self.engine = self.CreateEngine()
         self.SessionLocal = self.CreateSession()
-    
 
     def CreateEngine(self):
 
-      engine = self.engine = create_engine(
+      self.engine = create_engine(
             self.__SQLALCHEMY_DATABASE_URL__,
             connect_args = {"check_same_thread" : False} 
         )
       
-      return engine
+      return self.engine
 
     def CreateSession(self):
-
+       
        session = sessionmaker(autoflush=False, bind=self.engine)
 
        return session

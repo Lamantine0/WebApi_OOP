@@ -10,7 +10,7 @@ from settings.settings_db import settings_db
 from fastapi.responses import JSONResponse
 from sqlalchemy import or_
 import base64
-
+import random
 
 
 app = FastAPI()
@@ -45,19 +45,22 @@ class News:
         )
                 
         if not new_news:
-            raise HTTPException(status_code=404, detail="Новость не создана")    
-      
+            raise HTTPException(status_code=404, detail="Новость не создана")
+        
         db.add(new_news)
         db.commit()
         db.refresh(new_news)
-       
-        return {"Новость добавлена : id" : new_news.id,
-        "Дата добавления новости" : current_date,
-        "Время добавление новости" : current_time}
 
-        
-    
+        # Сохраненить данные в лист , либо использовать return и сформировать json ответ через {}
+        list_new = [
+            {
+                "id" : new_news.id,
+                "date" : current_date,
+                "time" : current_time,
+            }
+        ]
 
+        return list_new
 
     @app.get("/get_all_news/", tags=["Получение всех новостей"])
     async def get_all_news():
@@ -69,8 +72,6 @@ class News:
         if not all_news:
             raise HTTPException(status_code=404, detail="Новости не найдены")
 
-        
-        
         news_list = []
 
         for news in all_news:
@@ -81,25 +82,15 @@ class News:
 
                 #image_base64 = base64.b64encode(news.image).decode('utf-8')
                 #image_data = image_base64
-
-
             else:
                 
                 image_type  = None
-            
-           
-            news_item = Table_news(
-                id=news.id,
-                title=news.title,
-                news=news.news,
-                image=image_type
-            ) 
-           
+
             news_list.append({
-                "id": news_item.id,
-                "title": news_item.title,
-                "news": news_item.news,
-                "image": news_item.image
+                "id": news.id,
+                "title": news.title,
+                "news": news.news,
+                "image": image_type
             })
 
         return news_list
@@ -293,6 +284,42 @@ class News:
                 "image" : image_base64
 
             }
+            
+    @app.get("/random_news/", tags=["Получение рандомной новости"])
+    async def random_news():
+
+        with settings_db.SessionLocal() as db:
+            
+            news = db.query(Table_news).all()
+
+            if not news:
+
+                raise HTTPException(status_code=404, detail="Новости не найдены")
+                   
+            news_random = random.choice(news)
+
+            return {
+                "id" : news_random.id,
+                "title" : news_random.title,
+                "news" : news_random.news,
+            }
+
+                
+
+
+        
+
+            
+
+           
+
+          
+
+             
+
+             
+
+
             
 
 
